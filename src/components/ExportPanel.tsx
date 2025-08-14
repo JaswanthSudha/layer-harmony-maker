@@ -33,7 +33,7 @@ export const ExportPanel = ({ backgroundImage, foregroundImage, transform }: Exp
     
     return new Promise((resolve) => {
       bgImg.onload = () => {
-        ctx.drawImage(bgImg, 0, 0);
+        ctx.drawImage(bgImg, 0, 0, canvas.width, canvas.height);
 
         if (foregroundImage) {
           const fgImg = new Image();
@@ -42,16 +42,37 @@ export const ExportPanel = ({ backgroundImage, foregroundImage, transform }: Exp
           fgImg.onload = () => {
             ctx.save();
 
-            // Apply transformations
+            // Apply transformations - scale positions from canvas display to actual image size
             const centerX = canvas.width / 2;
             const centerY = canvas.height / 2;
+            
+            // Calculate scale factor from display canvas to actual image
+            const maxDisplayWidth = 800;
+            const maxDisplayHeight = 600;
+            const aspectRatio = backgroundImage.width / backgroundImage.height;
+            
+            let displayWidth = backgroundImage.width;
+            let displayHeight = backgroundImage.height;
+            
+            if (displayWidth > maxDisplayWidth) {
+              displayWidth = maxDisplayWidth;
+              displayHeight = displayWidth / aspectRatio;
+            }
+            
+            if (displayHeight > maxDisplayHeight) {
+              displayHeight = maxDisplayHeight;
+              displayWidth = displayHeight * aspectRatio;
+            }
+            
+            const scaleFactorX = canvas.width / displayWidth;
+            const scaleFactorY = canvas.height / displayHeight;
 
             ctx.globalAlpha = transform.opacity;
-            ctx.translate(centerX + transform.x, centerY + transform.y);
+            ctx.translate(centerX + (transform.x * scaleFactorX), centerY + (transform.y * scaleFactorY));
             ctx.rotate((transform.rotation * Math.PI) / 180);
             ctx.scale(transform.scale, transform.scale);
 
-            // Draw foreground image
+            // Draw foreground image with original dimensions
             ctx.drawImage(
               fgImg,
               -foregroundImage.width / 2,
@@ -94,11 +115,32 @@ export const ExportPanel = ({ backgroundImage, foregroundImage, transform }: Exp
       fgImg.onload = () => {
         ctx.save();
 
-        // Apply transformations
+        // Apply transformations - scale positions from canvas display to actual image size
         const centerX = canvas.width / 2;
         const centerY = canvas.height / 2;
+        
+        // Calculate scale factor from display canvas to actual image
+        const maxDisplayWidth = 800;
+        const maxDisplayHeight = 600;
+        const aspectRatio = backgroundImage.width / backgroundImage.height;
+        
+        let displayWidth = backgroundImage.width;
+        let displayHeight = backgroundImage.height;
+        
+        if (displayWidth > maxDisplayWidth) {
+          displayWidth = maxDisplayWidth;
+          displayHeight = displayWidth / aspectRatio;
+        }
+        
+        if (displayHeight > maxDisplayHeight) {
+          displayHeight = maxDisplayHeight;
+          displayWidth = displayHeight * aspectRatio;
+        }
+        
+        const scaleFactorX = canvas.width / displayWidth;
+        const scaleFactorY = canvas.height / displayHeight;
 
-        ctx.translate(centerX + transform.x, centerY + transform.y);
+        ctx.translate(centerX + (transform.x * scaleFactorX), centerY + (transform.y * scaleFactorY));
         ctx.rotate((transform.rotation * Math.PI) / 180);
         ctx.scale(transform.scale, transform.scale);
 
